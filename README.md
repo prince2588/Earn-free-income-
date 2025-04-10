@@ -539,7 +539,7 @@
       sections.forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
-      // Only admin can view broker administration and customize sections
+      // Only admin can view broker and customize sections
       const currentUser = getCurrentUser();
       if ((sectionId === 'broker' || sectionId === 'customize') && currentUser !== ADMIN_EMAIL) {
         sectionId = 'dashboard';
@@ -607,7 +607,7 @@
       showLogin();
     }
     
-    // Process Login
+    // Process Login: If user is not registered, notify and redirect to sign up.
     function processLogin() {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
@@ -618,7 +618,12 @@
         return;
       }
       let users = getUsers();
-      if (users[email] && users[email].password === password) {
+      if (!users[email]) {
+        alert("User not found. Please sign up.");
+        showRegister();
+        return;
+      }
+      if (users[email].password === password) {
         setCurrentUser(email);
         updateDashboard();
         showSection('dashboard');
@@ -632,12 +637,12 @@
       const currentUser = getCurrentUser();
       if (!currentUser) return;
       
-      // Display user email in the top of the dashboard in large uppercase letters
+      // Display user email in large uppercase letters at the top
       const emailDisplay = document.getElementById('userEmailDisplay');
       emailDisplay.textContent = currentUser.toUpperCase();
       emailDisplay.classList.remove('hidden');
       
-      // For admin, keep personalized welcome; for non-admin users, use the custom welcome message.
+      // For admin, use admin welcome; for non-admin users, show custom welcome message.
       if (currentUser === ADMIN_EMAIL) {
         document.getElementById('welcomeMessage').textContent = "Welcome, Admin.";
       } else {
@@ -646,7 +651,7 @@
       
       if (currentUser === ADMIN_EMAIL) {
         document.getElementById('userBalance').textContent = "Admin";
-        // Show broker link and admin editor and customize link for admin
+        // Show admin-only links
         document.getElementById('brokerLinkContainer').classList.remove('hidden');
         document.getElementById('adminEditor').classList.remove('hidden');
         document.getElementById('customizeLinkContainer').classList.remove('hidden');
@@ -656,7 +661,7 @@
         const balance = users[currentUser] ? users[currentUser].balance : 0;
         document.getElementById('userBalance').textContent = balance;
         document.getElementById('withdrawLinkContainer').classList.remove('hidden');
-        // Hide broker link, admin editor and customize link for non-admin
+        // Hide admin-only links for non-admin users
         document.getElementById('brokerLinkContainer').classList.add('hidden');
         document.getElementById('adminEditor').classList.add('hidden');
         document.getElementById('customizeLinkContainer').classList.add('hidden');
@@ -749,7 +754,7 @@
         alert("Please fill in all fields with valid information.");
         return;
       }
-      // Show the withdrawal loading screen (5 seconds)
+      // Show the withdrawal loading screen for 5 seconds
       document.getElementById('withdrawLoadingScreen').style.display = 'flex';
       setTimeout(() => {
         alert("Withdrawal request submitted. Funds will be converted into your local currency and sent directly to your bank account.");
